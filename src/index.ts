@@ -1,4 +1,4 @@
-import fs from 'fs'
+import { readExampleSourceCode } from './helpers'
 
 type UseStateToken = {
     sourceCodeFullLine: string

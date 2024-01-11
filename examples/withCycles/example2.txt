@@ -10,5 +10,5 @@ function Example() {
     useEffect(() => {
         setFirstName(fullName.split(' ')[0])
         console.log('test log')
-    }, [fullName])
+    }, [])
 }
