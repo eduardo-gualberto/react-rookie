@@ -62,3 +62,5 @@ test('identifyUseStates: skip invalid syntax for useState in example3.txt', () =
         setStateName: 'setFirstName'
       }])
 })
+
+// TODO(eduardo): write tests for identifyUseEffects function
