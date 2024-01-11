@@ -1,0 +1,9 @@
+function Example() {
+    const [firstName, setFirstName] = useState('Taylor');
+    const [lastName, setLastName = useState('Swift');
+  
+    const [, setFullName] = useState('');
+    useEffect(() => {
+      setFullName(firstName + ' ' + lastName);
+    }, [firstName, lastName]);
+  }
