@@ -1,3 +1,6 @@
+# TS outDir
+build
+
 # Logs
 logs
 *.log
