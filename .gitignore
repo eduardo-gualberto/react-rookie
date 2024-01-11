@@ -1,6 +1,9 @@
 # TS outDir
 build
 
+# yarn.lock
+yarn.lock
+
 # Logs
 logs
 *.log
