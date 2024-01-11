@@ -1,0 +1,13 @@
+{
+  "name": "react-rookie",
+  "version": "1.0.0",
+  "description": "Static Analysis Tool designed to identify react hooks cycles.",
+  "main": "index.js",
+  "repository": "https://github.com/eduardo-gualberto/react-rookie.git",
+  "author": "Eduardo Gualberto <58743989+eduardo-gualberto@users.noreply.github.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.10.8",
+    "typescript": "^5.3.3"
+  }
+}
