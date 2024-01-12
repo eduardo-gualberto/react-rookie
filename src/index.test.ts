@@ -1,4 +1,4 @@
-import { identifyUseStates } from '@/index'
+import { identifyUseEffects, identifyUseStates } from '@/index'
 import { readExampleSourceCode } from './helpers'
 
 test('identifyUseStates: returns empty list when no useStates', () => {
@@ -54,3 +54,52 @@ test('identifyUseStates: skip invalid syntax for useState in example3.txt', () =
 })
 
 // TODO(eduardo): write tests for identifyUseEffects function
+test('identifyUseEffects: returns empty list when theres no useEffect', () => {
+  const example4SourceCode = readExampleSourceCode(false, 4)
+  expect(identifyUseEffects(example4SourceCode)).toStrictEqual([])
+})
+
+test('identifyUseEffects: returns every useEffect in the source code', () => {
+  const example1SourceCode = readExampleSourceCode(true, 1)
+  expect(identifyUseEffects(example1SourceCode)).toStrictEqual([
+    {
+      sourceCodeFullLine: 'useEffect(() => {\r\n' +
+        "        setFullName(firstName + ' ' + lastName);\r\n" +     
+        '    }, [firstName, lastName]);',
+      effectBody: "setFullName(firstName + ' ' + lastName);\r\n    ",
+      effectDeps: 'firstName, lastName'
+    },
+    {
+      sourceCodeFullLine: 'useEffect(() => {\r\n' +
+        "        setFirstName(fullName.split(' ')[0])\r\n" +
+        '    }, [fullName])\r\n',
+      effectBody: "setFirstName(fullName.split(' ')[0])\r\n    ",    
+      effectDeps: 'fullName'
+    }
+  ])
+})
+
+test('identifyUseEffects: returns every valid useEffect in the source code', () => {
+  const example1SourceCode = readExampleSourceCode(true, 2)
+  expect(identifyUseEffects(example1SourceCode)).toStrictEqual([
+    {
+      sourceCodeFullLine: 'useEffect(() => {\r\n' +
+        "        setFullName(firstName + ' ' + lastName);\r\n" +
+        '    }, [firstName, lastName]);',
+      effectBody: "setFullName(firstName + ' ' + lastName);\r\n    ",
+      effectDeps: 'firstName, lastName'
+    },
+    {
+      sourceCodeFullLine: 'useEffect(() => {\r\n' +
+        "        setFirstName(fullName.split(' ')[0])\r\n" +
+        "        console.log('test log')\r\n" +
+        '    }, [])\r\n' +
+        '\r\n' +
+        '    ',
+      effectBody: "setFirstName(fullName.split(' ')[0])\r\n" +
+        "        console.log('test log')\r\n" +
+        '    ',
+      effectDeps: ''
+    }
+  ])
+})

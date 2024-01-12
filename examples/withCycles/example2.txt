@@ -11,4 +11,8 @@ function Example() {
         setFirstName(fullName.split(' ')[0])
         console.log('test log')
     }, [])
+
+    useEffect(() => {
+        setLastName('Eduardo')
+    }, []
 }
