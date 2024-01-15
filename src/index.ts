@@ -150,11 +150,3 @@ export const detectCycle = (nodes: Array<Node>): boolean => {
 
     return visited !== nodesNum; // if not all vertices are visited, there is a cycle
 }
-
-const sourceCode = readExampleSourceCode(true, 1)
-const effects = identifyUseEffects(sourceCode)
-const states = identifyUseStates(sourceCode)
-
-const nodes = processEffectsIntoNodes(effects, states)
-
-console.log('result: ', detectCycle(nodes));
