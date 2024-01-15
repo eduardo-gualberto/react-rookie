@@ -110,10 +110,54 @@ const connectNodes = (stateMappings: Array<UseStateMappingToNodes>) => {
     })
 }
 
-// const sourceCode = readExampleSourceCode(true, 1)
-// const effects = identifyUseEffects(sourceCode)
-// const states = identifyUseStates(sourceCode)
+type AlgoNode = {
+    node: Node
+    index: number
+    inDegree: number
+}
+export const detectCycle = (nodes: Array<Node>): boolean => {
+    const nodesNum = nodes.length
+    const q: Array<AlgoNode> = []; // queue to store vertices with 0 in-degree
+    let visited = 0; // count of visited vertices
 
-// console.log("States: ", states)
-// console.log("Effects: ", effects);
-// console.log("Result: ", processEffectsIntoNodes(effects, states).map(n => ({...n, edges: n.edges.map(e => e.effect.effectBody)})))
+    const algoNodes: Array<AlgoNode> = nodes.map((node, i) => ({ node, index: i, inDegree: 0 }))
+
+    // calculate in-degree of each vertex
+    for (const node of algoNodes)
+        node.inDegree = algoNodes.filter(n => n.node.edges.map(e => e.effect.sourceCodeFullLine).includes(node.node.effect.sourceCodeFullLine)).length
+
+    // enqueue vertices with 0 in-degree
+    for (const node of algoNodes)
+        if (node.inDegree === 0)
+            q.push(node)
+
+    // BFS traversal
+    while (q.length > 0) {
+        const u = q.shift();
+        visited++;
+
+        if (u) {
+            // reduce in-degree of adjacent vertices
+            for (let v of u.node.edges) {
+                const algoV = algoNodes.find(an => an.node.effect.sourceCodeFullLine === v.effect.sourceCodeFullLine)
+                if (algoV) {
+                    algoV.inDegree -= 1;
+                    // if in-degree becomes 0, enqueue the vertex
+                    if (algoV.inDegree === 0) {
+                        q.push(algoV);
+                    }
+                }
+            }
+        }
+    }
+
+    return visited !== nodesNum; // if not all vertices are visited, there is a cycle
+}
+
+const sourceCode = readExampleSourceCode(true, 1)
+const effects = identifyUseEffects(sourceCode)
+const states = identifyUseStates(sourceCode)
+
+const nodes = processEffectsIntoNodes(effects, states)
+
+console.log('result: ', detectCycle(nodes));
