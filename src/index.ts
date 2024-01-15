@@ -111,6 +111,7 @@ const connectNodes = (stateMappings: Array<UseStateMappingToNodes>) => {
     })
 }
 
+// Algorithm based on https://www.geeksforgeeks.org/detect-cycle-in-a-graph/
 export const detectCycle = (nodes: Array<Node>): boolean => {
     const nodesNum = nodes.length
     const q: Array<Node> = []; // queue to store vertices with 0 in-degree
