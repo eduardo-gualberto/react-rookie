@@ -145,8 +145,8 @@ test('processEffectsIntoNodes: check if it returned the right amount of nodes', 
 })
 
 test('processEffectsIntoNodes: check if the returned nodes are correctly extracted (effectDeps)', () => {
-  expect(received[0].effect.effectDeps).toBe("firstName, lastName")
-  expect(received[1].effect.effectDeps).toBe("fullName")
+  expect(received[0].effectDeps).toBe("firstName, lastName")
+  expect(received[1].effectDeps).toBe("fullName")
 })
 
 test('processEffectsIntoNodes: check if the nodes have the correct amount of edges', () => {
@@ -155,6 +155,6 @@ test('processEffectsIntoNodes: check if the nodes have the correct amount of edg
 })
 
 test('processEffectsIntoNodes: check if the nodes edges are correctly connected', () => {
-  expect(received[0].edges[0].effect.effectDeps).toBe('fullName')
-  expect(received[1].edges[0].effect.effectDeps).toBe('firstName, lastName')
+  expect(received[0].edges[0].effectDeps).toBe('fullName')
+  expect(received[1].edges[0].effectDeps).toBe('firstName, lastName')
 })

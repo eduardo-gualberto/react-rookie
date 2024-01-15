@@ -1,4 +1,7 @@
 import { readExampleSourceCode } from './helpers'
+import { nanoid } from 'nanoid'
+
+const a = nanoid()
 
 type UseStateToken = {
     sourceCodeFullLine: string
@@ -12,9 +15,10 @@ type UseEffectToken = {
     effectDeps: string
 }
 
-type Node = {
-    effect: UseEffectToken
+type Node = UseEffectToken & {
     edges: Array<Node>
+    inDegree: number
+    id: string
 }
 
 export const identifyUseStates = (sourceCode: string): Array<UseStateToken> => {
@@ -53,10 +57,7 @@ export const identifyUseEffects = (sourceCode: string): Array<UseEffectToken> =>
     return useEffectToken
 }
 
-type UseStateMappingToNodes = {
-    sourceCodeFullLine: string
-    stateName: string
-    setStateName: string
+type UseStateMappingToNodes = UseStateToken & {
     dependentNodes: Array<Node>
     dispatchNodes: Array<Node>
 }
@@ -64,7 +65,7 @@ type UseStateMappingToNodes = {
 export const processEffectsIntoNodes = (effects: Array<UseEffectToken>, states: Array<UseStateToken>): Array<Node> => {
 
     const stateMappings: Array<UseStateMappingToNodes> = states.map(state => ({ ...state, dependentNodes: [], dispatchNodes: [] }))
-    const nodes: Array<Node> = effects.map(effect => ({ effect, edges: [] }))
+    const nodes: Array<Node> = effects.map(effect => ({ ...effect, edges: [], inDegree: 0, id: nanoid() }))
 
     // if node dispatches any setState, put it in dispatchNodes of the state's mapping.
     // if node's dependency array contains the state being processed, put it in dependentNodes of the state's mapping.
@@ -81,11 +82,11 @@ export const processEffectsIntoNodes = (effects: Array<UseEffectToken>, states: 
 const mapNodesToStates = (nodes: Array<Node>, states: Array<UseStateToken>, stateMappings: Array<UseStateMappingToNodes>): void => {
     nodes.forEach(node => {
         for (const state of states) {
-            if (node.effect.effectBody.match(state.setStateName)) {
+            if (node.effectBody.match(state.setStateName)) {
                 const mapping = stateMappings.find(sm => sm.setStateName === state.setStateName)
                 mapping?.dispatchNodes.push(node)
             }
-            if (node.effect.effectDeps.match(state.stateName)) {
+            if (node.effectDeps.match(state.stateName)) {
                 const mapping = stateMappings.find(sm => sm.stateName === state.stateName)
                 mapping?.dependentNodes.push(node)
             }
@@ -110,21 +111,16 @@ const connectNodes = (stateMappings: Array<UseStateMappingToNodes>) => {
     })
 }
 
-type AlgoNode = {
-    node: Node
-    index: number
-    inDegree: number
-}
 export const detectCycle = (nodes: Array<Node>): boolean => {
     const nodesNum = nodes.length
-    const q: Array<AlgoNode> = []; // queue to store vertices with 0 in-degree
+    const q: Array<Node> = []; // queue to store vertices with 0 in-degree
     let visited = 0; // count of visited vertices
 
-    const algoNodes: Array<AlgoNode> = nodes.map((node, i) => ({ node, index: i, inDegree: 0 }))
+    const algoNodes = nodes
 
     // calculate in-degree of each vertex
     for (const node of algoNodes)
-        node.inDegree = algoNodes.filter(n => n.node.edges.map(e => e.effect.sourceCodeFullLine).includes(node.node.effect.sourceCodeFullLine)).length
+        node.inDegree = algoNodes.filter(an => an.edges.some(e => e.id === node.id)).length
 
     // enqueue vertices with 0 in-degree
     for (const node of algoNodes)
@@ -138,8 +134,8 @@ export const detectCycle = (nodes: Array<Node>): boolean => {
 
         if (u) {
             // reduce in-degree of adjacent vertices
-            for (let v of u.node.edges) {
-                const algoV = algoNodes.find(an => an.node.effect.sourceCodeFullLine === v.effect.sourceCodeFullLine)
+            for (let v of u.edges) {
+                const algoV = algoNodes.find(an => an.id === v.id)
                 if (algoV) {
                     algoV.inDegree -= 1;
                     // if in-degree becomes 0, enqueue the vertex
