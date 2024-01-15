@@ -1,4 +1,4 @@
-import { identifyUseEffects, identifyUseStates } from '@/index'
+import { identifyUseEffects, identifyUseStates, processEffectsIntoNodes } from '@/index'
 import { readExampleSourceCode } from './helpers'
 
 test('identifyUseStates: returns empty list when no useStates', () => {
@@ -102,4 +102,59 @@ test('identifyUseEffects: returns every valid useEffect in the source code', () 
       effectDeps: ''
     }
   ])
+})
+
+const example1States = [
+  {
+    sourceCodeFullLine: "const [firstName, setFirstName] = useState('Taylor');",
+    stateName: 'firstName',
+    setStateName: 'setFirstName'
+  },
+  {
+    sourceCodeFullLine: "const [lastName, setLastName] = useState('Swift');",
+    stateName: 'lastName',
+    setStateName: 'setLastName'
+  },
+  {
+    sourceCodeFullLine: "const [fullName,setFullName] = useState('')",
+    stateName: 'fullName',
+    setStateName: 'setFullName'
+  }
+]
+const example1Effects = [
+  {
+    sourceCodeFullLine: 'useEffect(() => {\r\n' +
+      "        setFullName(firstName + ' ' + lastName);\r\n" +     
+      '    }, [firstName, lastName]);',
+    effectBody: "setFullName(firstName + ' ' + lastName);\r\n    ",
+    effectDeps: 'firstName, lastName'
+  },
+  {
+    sourceCodeFullLine: 'useEffect(() => {\r\n' +
+      "        setFirstName(fullName.split(' ')[0])\r\n" +
+      '    }, [fullName])\r\n',
+    effectBody: "setFirstName(fullName.split(' ')[0])\r\n    ",    
+    effectDeps: 'fullName'
+  }
+]
+const received = processEffectsIntoNodes(example1Effects, example1States)
+
+test('processEffectsIntoNodes: check if it returned the right amount of nodes', () => {
+  expect(received.length).toBe(2)
+
+})
+
+test('processEffectsIntoNodes: check if the returned nodes are correctly extracted (effectDeps)', () => {
+  expect(received[0].effect.effectDeps).toBe("firstName, lastName")
+  expect(received[1].effect.effectDeps).toBe("fullName")
+})
+
+test('processEffectsIntoNodes: check if the nodes have the correct amount of edges', () => {
+  expect(received[0].edges.length).toBe(1)
+  expect(received[1].edges.length).toBe(1)
+})
+
+test('processEffectsIntoNodes: check if the nodes edges are correctly connected', () => {
+  expect(received[0].edges[0].effect.effectDeps).toBe('fullName')
+  expect(received[1].edges[0].effect.effectDeps).toBe('firstName, lastName')
 })

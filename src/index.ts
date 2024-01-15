@@ -53,14 +53,15 @@ export const identifyUseEffects = (sourceCode: string): Array<UseEffectToken> =>
     return useEffectToken
 }
 
+type UseStateMappingToNodes = {
+    sourceCodeFullLine: string
+    stateName: string
+    setStateName: string
+    dependentNodes: Array<Node>
+    dispatchNodes: Array<Node>
+}
+
 export const processEffectsIntoNodes = (effects: Array<UseEffectToken>, states: Array<UseStateToken>): Array<Node> => {
-    type UseStateMappingToNodes = {
-        sourceCodeFullLine: string
-        stateName: string
-        setStateName: string
-        dependentNodes: Array<Node>
-        dispatchNodes: Array<Node>
-    }
 
     const stateMappings: Array<UseStateMappingToNodes> = states.map(state => ({ ...state, dependentNodes: [], dispatchNodes: [] }))
     const nodes: Array<Node> = effects.map(effect => ({ effect, edges: [] }))
@@ -68,6 +69,16 @@ export const processEffectsIntoNodes = (effects: Array<UseEffectToken>, states: 
     // if node dispatches any setState, put it in dispatchNodes of the state's mapping.
     // if node's dependency array contains the state being processed, put it in dependentNodes of the state's mapping.
     // for each node in nodes array
+    mapNodesToStates(nodes, states, stateMappings)
+
+    // for each dispatching node, put the state's mapping dependentNodes to its edges array, if it hasn't already
+    // letting commented out 2 other ways of doing the same thing in case it breaks in future
+    connectNodes(stateMappings)
+
+    return nodes
+}
+
+const mapNodesToStates = (nodes: Array<Node>, states: Array<UseStateToken>, stateMappings: Array<UseStateMappingToNodes>): void => {
     nodes.forEach(node => {
         for (const state of states) {
             if (node.effect.effectBody.match(state.setStateName)) {
@@ -80,9 +91,9 @@ export const processEffectsIntoNodes = (effects: Array<UseEffectToken>, states: 
             }
         }
     })
+}
 
-    // for each dispatching node, put the state's mapping dependentNodes to its edges array, if it hasn't already
-    // letting commented out 2 other ways of doing the same thing in case it breaks in future
+const connectNodes = (stateMappings: Array<UseStateMappingToNodes>) => {
     stateMappings.forEach(mapping => {
         // for (let node of mapping.dispatchNodes) {
         //     node.edges = node.edges.concat(mapping.dependentNodes)
@@ -97,8 +108,6 @@ export const processEffectsIntoNodes = (effects: Array<UseEffectToken>, states: 
             node.edges = [...new Set(node.edges)]   // this works because if there are dupes, they are references to the same object. This way the Array to Set conversion algorithm works properly
         }
     })
-
-    return nodes
 }
 
 // const sourceCode = readExampleSourceCode(true, 1)
