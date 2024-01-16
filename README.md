@@ -5,6 +5,16 @@ It makes sure you are not:
 * creating ``useEffect`` infinite loops
 * using ``useState`` redundantly (upcoming)
 
+
+The algorithm checks if the source code file you provide structures ``useEffect`` in a way that they would run non-stop, causing many sorts of problems. The way it works is by identifying all the ``useStates`` and ``useEffects`` in the code, processing all ``useEffects`` into nodes, or graph vertices, and connecting each other based on the dependency array and the ``setState`` calls inside the body of the ``useEffects``. It decribes a Directed Graph and the challenge is to look for cycles!
+
+## tech-stack adopted
+* TypeScript
+* Webpack
+* Jest
+
+## 
+
 ## important info
 ``react-rookie`` is a working, but still in development tool and so some use cases may not be covered by design, such as:
 * Not all hooks can be analysed. Currently only ```useState``` and ```useEffect``` are supported
