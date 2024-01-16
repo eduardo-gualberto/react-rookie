@@ -8,6 +8,8 @@ It makes sure you are not:
 
 The algorithm checks if the source code file you provide structures ``useEffect`` in a way that they would run non-stop, causing many sorts of problems. The way it works is by identifying all the ``useStates`` and ``useEffects`` in the code, processing all ``useEffects`` into nodes, or graph vertices, and connecting each other based on the dependency array and the ``setState`` calls inside the body of the ``useEffects``. It decribes a Directed Graph and the challenge is to look for cycles!
 
+![Directed Cyclic Graph example](https://github.com/eduardo-gualberto/react-rookie/assets/58743989/6e5533f1-e8d5-43ac-bc4b-23149d26ed75)
+
 ## tech-stack adopted
 * TypeScript
 * Webpack
